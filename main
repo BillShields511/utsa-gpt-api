@@ -1,0 +1,32 @@
+import firebase_admin
+from firebase_admin import credentials, firestore
+from pathlib import Path
+
+def main():
+    try:
+        ROOT_DIR = Path(__file__).parent
+        cert = ROOT_DIR / "utsa-gpt-firebase-adminsdk-fbsvc-d2f7d92bc8.json"
+        cred = credentials.Certificate(cert)
+        firebase_admin.initialize_app(cred)
+        
+        db = firestore.client()
+        docs = db.collection("test_collection").limit(1).stream()
+        
+        found = False
+        for doc in docs:
+            data = doc.to_dict()
+            for key, value in data.items():
+                print(f"    {key}: {value}")
+            print(f"Connected to Firebase. Found document: {doc.id}")
+            
+            found = True
+        if found:
+            print("Hello World")
+        else:
+            print("Connected to Firebase. No document found")
+    except Exception as e:
+        print("Failed to connect to Firebase:")
+        print(e)
+    
+if __name__ == "__main__":
+    main()
