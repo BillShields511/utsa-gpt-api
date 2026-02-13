@@ -1,0 +1,10 @@
+from firebase_script import get_document
+from pathlib import Path
+
+def main():
+    data = get_document("test_collection")
+    for key, value in data.items():
+        print(f"    {key}: {value}")
+    
+if __name__ == "__main__":
+    main()
