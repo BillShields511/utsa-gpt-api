@@ -1,10 +1,16 @@
 from firebase_script import get_document
+from gemini_agent import response
 from pathlib import Path
 
 def main():
     data = get_document("test_collection")
+    #print the data, just printing Arnav's name rn
     for key, value in data.items():
         print(f"    {key}: {value}")
+        
+    #asking the gemini api a question and printing the response
+    print(response("What is AI used for?"))
     
+#starts the main function when run as a script, but not when imported
 if __name__ == "__main__":
     main()

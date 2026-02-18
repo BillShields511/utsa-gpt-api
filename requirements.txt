@@ -1,3 +1,5 @@
 fastapi
 uvicorn
 firebase-admin
+llama-index
+google-genai

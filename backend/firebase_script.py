@@ -19,6 +19,7 @@ def get_document(name):
         docs = db.collection(name).limit(1).stream()
         
         found = False
+        #go through the documents returned by the query, currently limited by the .limit(1)
         for doc in docs:
             data = doc.to_dict()
             print(f"Connected to Firebase. Found document: {doc.id}")

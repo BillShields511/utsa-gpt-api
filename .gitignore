@@ -1,2 +1,4 @@
 utsa-gpt-firebase-adminsdk-fbsvc-d2f7d92bc8.json
 .firebaserc
+*.pyc
+*.env
