@@ -1,5 +1,6 @@
 import firebase_admin
 from firebase_admin import credentials, firestore
+import pandas as pd
 from pathlib import Path
 
 #get the path to the service account key file
@@ -34,3 +35,17 @@ def get_document(name):
     except Exception as e:
         print("Failed to connect to Firebase:")
         print(e)
+
+def write_to_db(file):
+    df = pd.read_csv(file)
+    for _, row in df.iterrows():
+        doc_id = f"{row['Date']}_{row['Away']}_{row['Home']}"
+        game_data = {
+            'day': row["Day"],
+            "date": row["Date"],
+            "away": row["Away"],
+            "home": row["Home"]
+        }
+        
+        db.collection("game").document(doc_id).set(game_data)
+    print("Data write complete!")
