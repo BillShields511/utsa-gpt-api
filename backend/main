@@ -1,18 +1,30 @@
-from firebase_script import get_document, write_to_db
-from gemini_agent import response
-from pathlib import Path
+from firebase_script import llamaLoad
+from gemini_agent import embedding, rag_response
 
 def main():
-    '''data = get_document("test_collection")
-    #print the data, just printing Arnav's name rn
-    for key, value in data.items():
-        print(f"    {key}: {value}")
+    try:
+        document = llamaLoad("game")
+        print("Documents loaded:", len(document))
+        if not document:
+            print("No documents found in the collection.")
+            return
         
-    #asking the gemini api a question and printing the response
-    print(response("What is AI used for?")) '''
-    write_to_db("nfl_schedule.csv")
+        # Build contents and vectors ONCE before the question loop
+        contents = [doc.text for doc in document]
+        vectors = embedding(contents)
+        print(f"Indexed {len(vectors)} documents")
+        
+        while True:
+            question = input("\nAsk a question about the NFL schedule (or type 'exit' to quit): ")
+            if question.lower() == "exit":
+                break
+            
+            answer = rag_response(question, contents, vectors)
+            print("\nGemini Agent Response:", answer)
 
-    
-#starts the main function when run as a script, but not when imported
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+
 if __name__ == "__main__":
     main()
