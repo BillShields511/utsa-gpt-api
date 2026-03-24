@@ -1,30 +1,43 @@
-from firebase_script import llamaLoad
-from gemini_agent import embedding, rag_response
+import traceback
 
-def main():
+from firebase_script import load_documents
+from gemini_agent import RAGAgent
+
+_COLLECTION = "game"
+_EXIT_COMMAND = "exit"
+
+
+def main() -> None:
     try:
-        document = llamaLoad("game")
-        print("Documents loaded:", len(document))
-        if not document:
+        documents = load_documents(_COLLECTION)
+        if not documents:
             print("No documents found in the collection.")
             return
-        
-        # Build contents and vectors ONCE before the question loop
-        contents = [doc.text for doc in document]
-        vectors = embedding(contents)
-        print(f"Indexed {len(vectors)} documents")
-        
+        print(f"Documents loaded: {len(documents)}")
+
+        agent = RAGAgent()
+
+        contents = [doc.text for doc in documents]
+        vectors = agent.embed(contents)
+        print(f"Indexed {len(vectors)} documents.")
+
         while True:
-            question = input("\nAsk a question about the NFL schedule (or type 'exit' to quit): ")
-            if question.lower() == "exit":
+            question = input(
+                f"\nAsk a question about the NFL schedule "
+                f"(or type '{_EXIT_COMMAND}' to quit): "
+            ).strip()
+
+            if not question:
+                continue
+            if question.lower() == _EXIT_COMMAND:
                 break
-            
-            answer = rag_response(question, contents, vectors)
+
+            answer, _ = agent.answer(question, contents, vectors, verbose=False)
             print("\nGemini Agent Response:", answer)
 
-    except Exception as e:
-        import traceback
+    except Exception:
         traceback.print_exc()
+
 
 if __name__ == "__main__":
     main()
