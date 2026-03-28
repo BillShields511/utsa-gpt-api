@@ -5,10 +5,11 @@ from firebase_admin import credentials, firestore as admin_firestore
 from llama_index.core import Document
 import pandas as pd
 
+#intialize connection to firebase with key
 ROOT_DIR = Path(__file__).parent
 _CERT_PATH = ROOT_DIR / "utsa-gpt-firebase-adminsdk-fbsvc-d2f7d92bc8.json"
 
-
+#connect to firebase and return a a clinet for the database
 def _get_db() -> admin_firestore.Client:
     """Initialize Firebase app once and return a Firestore client."""
     if not firebase_admin._apps:
@@ -16,7 +17,7 @@ def _get_db() -> admin_firestore.Client:
         firebase_admin.initialize_app(cred)
     return admin_firestore.client()
 
-
+#get a single document for the collection, should be used for testing
 def get_document(collection: str, name: str) -> dict | None:
     """Return the first document in *collection* as a dict, or None."""
     db = _get_db()
@@ -30,7 +31,7 @@ def get_document(collection: str, name: str) -> dict | None:
         print(f"Failed to connect to Firebase: {exc}")
         return None
 
-
+#write the nfl schedule data from csv to the database, can be rewritten later for reuseability
 def write_to_db(file: str, collection: str = "game") -> None:
     """Upload every row of *file* (CSV) to Firestore under *collection*."""
     db = _get_db()
@@ -47,7 +48,7 @@ def write_to_db(file: str, collection: str = "game") -> None:
         )
     print("Data write complete!")
 
-
+#load documents from the database and return them as a list of document objects with text and metadata (doc id)
 def load_documents(collection: str) -> list[Document]:
     """Stream *collection* from Firestore and return LlamaIndex Documents."""
     db = _get_db()
@@ -55,8 +56,8 @@ def load_documents(collection: str) -> list[Document]:
     for doc in db.collection(collection).stream():
         data = doc.to_dict()
         text = (
-            f"On {data.get('day', '')} {data.get('date', '')}, "
-            f"{data.get('away', '')} plays at {data.get('home', '')}."
+            f"NFL Game: {data.get('away', 'Unknown')} (away) vs {data.get('home', 'Unknown')} (home). "
+            f"Date: {data.get('date', 'Unknown')}, Day: {data.get('day', 'Unknown')}."
         )
         documents.append(Document(text=text, metadata={"doc_id": doc.id}))
     return documents
