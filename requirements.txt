@@ -3,3 +3,9 @@ uvicorn
 firebase-admin
 llama-index
 google-genai
+sentence-transformers
+rank_bm25
+openai
+python-dotenv
+
+
