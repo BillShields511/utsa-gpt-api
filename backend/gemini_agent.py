@@ -41,6 +41,8 @@ _EMBED_MODEL_NAME = "all-MiniLM-L6-v2"
 #prompt we feed to gemini when it gives the final answer
 _RAG_PROMPT_TEMPLATE = """\
 You are a helpful assistant that ONLY answers questions using the provided data.
+You are given the original question and a rewritten query that will provide clarity,
+but answer the question based off the original question.
 Do NOT use any outside knowledge. If the answer is not in the data, say \
 "I don't have that information."
 
@@ -60,6 +62,7 @@ for searching an NFL schedule database.
 The database contains: team names, game dates, days of the week, home/away designations.
 
 Rules:
+- Make your best effort to pick out specific teams and dates that could fit the user's question
 - Expand team nicknames to full names (e.g. "Cowboys" → "Dallas Cowboys")
 - Make implicit info explicit (e.g. "this Sunday" → "Sunday")
 - Keep it concise — one sentence
@@ -176,6 +179,7 @@ class RAGAgent:
         #get documents with query, and then rerank them for final answer
         candidates = self.retrieve(rewritten, documents, vectors, top_k=10)
         relevant = self.rerank(rewritten, candidates, top_k=5)
+        question = "Original question: " + question + "\nRewritten query: " + rewritten
 
         if verbose:
             self._print_context(relevant)
