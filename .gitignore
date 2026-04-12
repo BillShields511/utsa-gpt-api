@@ -1,5 +1,10 @@
 utsa-gpt-firebase-adminsdk-fbsvc-d2f7d92bc8.json
 utsa-gpt-488016-d7236ce9ea32.json
+utsa-gpt-488016-21828f03d769.json
+backend\utsa-gpt-firebase-adminsdk-fbsvc-a08c72b67d.json
 .firebaserc
 *.pyc
 *.env
+.claude/
+.vscode/
+*/__pycache__/

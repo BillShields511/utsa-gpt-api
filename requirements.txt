@@ -1,11 +1,11 @@
 fastapi
 uvicorn
 firebase-admin
-llama-index
+llama-index-core
 google-genai
 sentence-transformers
 rank_bm25
-openai
 python-dotenv
-
-
+numpy
+pandas
+selenium

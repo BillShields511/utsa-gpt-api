@@ -7,8 +7,10 @@ _COLLECTION = "game"
 #command to exit from the cli
 _EXIT_COMMAND = "exit"
 
+_GREETING = "Ask a question about the NFL schedule, and I'll do my best to answer it based on the data I have!"
 
-def main() -> None:
+
+def mainCL() -> None:
     try:
         # load documents as a list of LlamaIndex Document objects, which have the string and name of document it is from
         documents = load_documents(_COLLECTION)
@@ -28,7 +30,7 @@ def main() -> None:
         #while loop for cli to ask questions continually until 'exit'
         while True:
             question = input(
-                f"\nAsk a question about the NFL schedule " 
+                _GREETING + 
                 f"(or type '{_EXIT_COMMAND}' to quit): "
             ).strip()
 
