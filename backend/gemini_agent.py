@@ -113,28 +113,8 @@ _agent: "RAGAgent | None" = None
 
 def get_agent(query_rewrite_template: "str | Path | None" = None) -> "RAGAgent":
     """Return the shared RAGAgent singleton, creating it on first call.
-
     Intended to be called once inside FastAPI's lifespan startup handler so the
     heavy model loading happens at server start, not on the first request.
-
-    Example:
-        from contextlib import asynccontextmanager
-        from fastapi import FastAPI
-        from gemini_agent import get_agent, load_or_embed
-        from firebase_script import load_documents
-
-        @asynccontextmanager
-        async def lifespan(app: FastAPI):
-            agent = get_agent()                          # loads models once
-            docs = load_documents("your_collection")
-            texts = [d.text for d in docs]
-            vectors = load_or_embed(agent, texts)
-            app.state.agent = agent
-            app.state.docs = texts
-            app.state.vectors = vectors
-            yield
-
-        app = FastAPI(lifespan=lifespan)
     """
     global _agent
     if _agent is None:
