@@ -10,9 +10,8 @@ from gemini_agent import get_agent, load_or_embed
 from firebase_script import load_documents
 
 
-# ---------------------------------------------------------------------------
-# Pydantic models
-# ---------------------------------------------------------------------------
+
+# Pydantic models validate request and response content between the React frontend and FastAPI backend.
 
 class ChatRequest(BaseModel):
     question: str                # user's question from the React frontend
@@ -25,21 +24,18 @@ class HealthResponse(BaseModel):
     status: str                  # always "ok" when the server is running
 
 
-# ---------------------------------------------------------------------------
-# Lifespan — runs once at startup, tears down on shutdown
-# ---------------------------------------------------------------------------
+
+# Lifespan — runs once at startup to load models and data, then yields to serve requests. We use async to offload heavy operations
+# to a thread pool, allowing the event loop to stay responsive.
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Load models and documents once at server startup.
+    #Load models and documents once at server startup. Results are stored on app.state for access in endpoint handlers.
 
-    Heavy operations (SentenceTransformer, CrossEncoder, Firestore stream,
-    embedding) are offloaded to a thread pool so they don't block the event
-    loop during startup. Results are stored on app.state so every request
-    handler can reach them without re-initializing anything.
-    """
+    #the second parameter in collection is the name of the firestore colletion, currently nfl data
     collection = os.getenv("FIRESTORE_COLLECTION", "game")
-    template   = os.getenv("QUERY_REWRITE_TEMPLATE")   # optional .txt path
+    # optional .txt path to a custom query rewrite prompt template for the agent. If not provided, a default prompt is used.
+    template   = os.getenv("QUERY_REWRITE_TEMPLATE")
 
     # Loads SentenceTransformer + CrossEncoder — happens exactly once
     agent = get_agent(query_rewrite_template=template)
@@ -57,10 +53,8 @@ async def lifespan(app: FastAPI):
     # Nothing to clean up — models live in memory until process exits
 
 
-# ---------------------------------------------------------------------------
-# App
-# ---------------------------------------------------------------------------
 
+# App
 app = FastAPI(
     title="UTSA GPT API",
     description="RAG-powered chatbot grounded on user-supplied Firestore data.",
@@ -68,6 +62,7 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+# CORS middleware allows the React frontend (running on localhost:3000) to make requests to this FastAPI backend 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000"],
@@ -77,9 +72,8 @@ app.add_middleware(
 )
 
 
-# ---------------------------------------------------------------------------
+
 # Endpoints
-# ---------------------------------------------------------------------------
 
 @app.get("/health", response_model=HealthResponse, tags=["Meta"])
 async def health():
