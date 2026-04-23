@@ -48,4 +48,4 @@ def mainCL() -> None:
 
 #ensure that main() runs when this file is executed directly, but not when imported as a module (e.g., for testing)
 if __name__ == "__main__":
-    main()
+    mainCL()

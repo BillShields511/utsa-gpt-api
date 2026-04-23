@@ -1,6 +1,7 @@
 import asyncio
 import os
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -35,7 +36,9 @@ async def lifespan(app: FastAPI):
     #the second parameter in collection is the name of the firestore colletion, currently nfl data
     collection = os.getenv("FIRESTORE_COLLECTION", "game")
     # optional .txt path to a custom query rewrite prompt template for the agent. If not provided, a default prompt is used.
-    template   = os.getenv("QUERY_REWRITE_TEMPLATE")
+    # Anchored to this file's directory so cwd doesn't matter; falls back to the built-in default if the file is missing.
+    template_path = Path(__file__).parent / "nfl_query_rewrite.txt"
+    template      = str(template_path) if template_path.is_file() else None
 
     # Loads SentenceTransformer + CrossEncoder — happens exactly once
     agent = get_agent(query_rewrite_template=template)

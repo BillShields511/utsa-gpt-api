@@ -42,7 +42,14 @@ _GEMINI_MODEL = "gemini-2.5-flash"
 _EMBED_MODEL_NAME = "all-MiniLM-L6-v2"
 
 #prompt we feed to gemini when it gives the final answer
-_RAG_PROMPT_TEMPLATE = """\
+#load custom prompt from file if it exists, otherwise use the default template
+_CUSTOM_PROMPT_PATH = "./custom_prompt.txt"
+
+if os.path.exists(_CUSTOM_PROMPT_PATH):
+    with open(_CUSTOM_PROMPT_PATH, "r") as f:
+        _RAG_PROMPT_TEMPLATE = f.read()
+else:
+    _RAG_PROMPT_TEMPLATE = """\
 You are a helpful assistant that ONLY answers questions using the provided data.
 You are given the original question and a rewritten query that will provide clarity,
 but answer the question based off the original question.
@@ -243,6 +250,7 @@ class RAGAgent:
         rewritten = await self.rewrite_query(question)
 
         if verbose:
+            print(f"\n")
             print(f"\n--- Query Rewrite ---")
             print(f"Original:  {question}")
             print(f"Rewritten: {rewritten}")
