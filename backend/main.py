@@ -1,4 +1,5 @@
 import asyncio
+import json
 import os
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -19,7 +20,7 @@ class ChatRequest(BaseModel):
 
 class ChatResponse(BaseModel):
     answer: str                  # Gemini's grounded answer
-    sources: list[str]           # raw document snippets used as context
+    #sources: list[str]           # raw document snippets used as context
 
 class HealthResponse(BaseModel):
     status: str                  # always "ok" when the server is running
@@ -86,15 +87,9 @@ async def health():
 
 @app.post("/chat", response_model=ChatResponse, tags=["Chat"])
 async def chat(body: ChatRequest, request: Request):
-    """Send a question and receive a grounded answer from Gemini.
-
-    The answer is generated using only data retrieved from the Firestore
-    collection loaded at startup. The response also includes the source
-    document snippets that were used as context.
-    """
     answer, sources = await request.app.state.agent.answer(
         body.question,
         request.app.state.docs,
         request.app.state.vectors,
     )
-    return ChatResponse(answer=answer, sources=sources)
+    return ChatResponse(answer=answer)
