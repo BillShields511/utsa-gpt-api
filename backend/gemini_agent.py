@@ -43,7 +43,7 @@ _EMBED_MODEL_NAME = "all-MiniLM-L6-v2"
 
 #prompt we feed to gemini when it gives the final answer
 #load custom prompt from file if it exists, otherwise use the default template
-_CUSTOM_PROMPT_PATH = "./custom_prompt.txt"
+_CUSTOM_PROMPT_PATH = "./custom_prompt_pc.txt"
 
 if os.path.exists(_CUSTOM_PROMPT_PATH):
     with open(_CUSTOM_PROMPT_PATH, "r") as f:
