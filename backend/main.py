@@ -35,10 +35,10 @@ async def lifespan(app: FastAPI):
     #Load models and documents once at server startup. Results are stored on app.state for access in endpoint handlers.
 
     #the second parameter in collection is the name of the firestore colletion, currently nfl data
-    collection = os.getenv("FIRESTORE_COLLECTION", "game")
+    collection = os.getenv("FIRESTORE_COLLECTION", "pc_builds_synthetic")
     # optional .txt path to a custom query rewrite prompt template for the agent. If not provided, a default prompt is used.
     # Anchored to this file's directory so cwd doesn't matter; falls back to the built-in default if the file is missing.
-    template_path = Path(__file__).parent / "nfl_query_rewrite.txt"
+    template_path = Path(__file__).parent / "pc_query_rewrite.txt"
     template      = str(template_path) if template_path.is_file() else None
 
     # Loads SentenceTransformer + CrossEncoder — happens exactly once
