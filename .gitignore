@@ -1,10 +1,27 @@
-utsa-gpt-firebase-adminsdk-fbsvc-d2f7d92bc8.json
-utsa-gpt-488016-d7236ce9ea32.json
-utsa-gpt-488016-21828f03d769.json
-backend\utsa-gpt-firebase-adminsdk-fbsvc-a08c72b67d.json
+# Firebase / GCP service account keys — never commit these.
+# Patterns without a slash match at any depth, which the previous
+# "backend\...json" entry did not: gitignore uses forward slashes only,
+# so that line matched nothing and the key was unprotected.
+utsa-gpt-*.json
+*service-account*.json
 .firebaserc
-*.pyc
+
+# Secrets
+.env
 *.env
+
+# Python
+*.pyc
+__pycache__/
+.venv/
+venv/
+
+# Local caches / large artifacts
+vectors_cache.json
+chromedriver
+chromedriver.exe
+
+# Editor / tooling
 .claude/
 .vscode/
-*/__pycache__/
+.DS_Store

@@ -13,9 +13,9 @@ When answering:
 - If a team is not mentioned in the data, say "That team is not in the schedule data"
 - Answer the question the user asked, and then print the game or games relevant to their question
 -When answering questions about a team's next game, always start with a direct sentence in this format:
-"The [Team] play the [Opponent] next on [Day], [Date] at [Time]."
+"The [Team] play the [Opponent] next on [Day], [Date]"
 Then you can follow up with any additional detail.
-- Format game matchups as: "Away Team at Home Team on Date, at Time"
+- Format game matchups as: "Away Team at Home Team on Date, on Day"
 
 Here is the schedule data:
 {context}

@@ -1,5 +1,6 @@
 import asyncio
 import os
+import re
 import warnings
 import logging
 import json
@@ -29,6 +30,18 @@ logging.getLogger("sentence_transformers").setLevel(logging.ERROR)
 logging.getLogger("huggingface_hub").setLevel(logging.ERROR)
 logging.getLogger("transformers").setLevel(logging.ERROR)
 
+# Our own logger, so our messages survive the suppression above.
+_log = logging.getLogger(__name__)
+
+
+# BM25 tokenizer. Splitting on whitespace leaves punctuation attached to tokens,
+# so a document serialized as "away: Dallas, home: Philadelphia" produced the
+# token "dallas," which could never match a query token "dallas". In practice
+# that meant only the final field of each document was searchable. Stripping to
+# alphanumeric runs fixes it.
+def _tokenize(text: str) -> list[str]:
+    return re.findall(r"[a-z0-9]+", text.lower())
+
 #load environment variables from .env file, which should include GEMINI_API_KEY for authentication with Gemini API
 load_dotenv()
 
@@ -43,12 +56,22 @@ _EMBED_MODEL_NAME = "all-MiniLM-L6-v2"
 
 #prompt we feed to gemini when it gives the final answer
 #load custom prompt from file if it exists, otherwise use the default template
-_CUSTOM_PROMPT_PATH = "./custom_prompt.txt"
+# Anchored to this file's directory so the prompt loads no matter which directory
+# uvicorn was launched from. A relative path here silently fell back to the
+# generic template whenever the server started from the repo root.
+_CUSTOM_PROMPT_PATH = Path(__file__).parent / "custom_prompt.txt"
 
-if os.path.exists(_CUSTOM_PROMPT_PATH):
-    with open(_CUSTOM_PROMPT_PATH, "r") as f:
-        _RAG_PROMPT_TEMPLATE = f.read()
+if _CUSTOM_PROMPT_PATH.is_file():
+    _RAG_PROMPT_TEMPLATE = _CUSTOM_PROMPT_PATH.read_text()
 else:
+    # Loud on purpose. Falling back here means answer quality quietly degrades,
+    # which is much harder to notice than a crash. Uses logging rather than
+    # warnings because filterwarnings("ignore") above would swallow a warning.
+    _log.warning(
+        "custom_prompt.txt not found at %s — falling back to the generic "
+        "prompt template. Answers will be less accurate.",
+        _CUSTOM_PROMPT_PATH,
+    )
     _RAG_PROMPT_TEMPLATE = """\
 You are a helpful assistant that ONLY answers questions using the provided data.
 You are given the original question and a rewritten query that will provide clarity,
@@ -187,7 +210,8 @@ class RAGAgent:
 
         # --- BM25 scores (only if index exists) ---
         if self._bm25 is not None:
-            bm25_scores = np.array(self._bm25.get_scores(query.lower().split()))
+            # Must use the same tokenizer the index was built with.
+            bm25_scores = np.array(self._bm25.get_scores(_tokenize(query)))
 
             def normalize(s):
                 r = s.max() - s.min()
@@ -215,7 +239,7 @@ class RAGAgent:
         when vectors are restored from cache, since BM25 is not cached and must
         be rebuilt from the raw document text.
         """
-        tokenized = [t.lower().split() for t in texts]
+        tokenized = [_tokenize(t) for t in texts]
         self._bm25 = BM25Okapi(tokenized)
 
     async def rewrite_query(self, question: str) -> str:

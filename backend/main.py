@@ -20,6 +20,8 @@ class ChatRequest(BaseModel):
 
 class ChatResponse(BaseModel):
     answer: str                  # Gemini's grounded answer
+    # Re-enable together with the return in /chat below once the React client
+    # is ready to consume it. The agent already computes these.
     #sources: list[str]           # raw document snippets used as context
 
 class HealthResponse(BaseModel):
@@ -92,4 +94,7 @@ async def chat(body: ChatRequest, request: Request):
         request.app.state.docs,
         request.app.state.vectors,
     )
+    # Held back so the response shape stays stable for the current frontend.
+    # To ship sources, uncomment the field on ChatResponse and swap this for:
+    #     return ChatResponse(answer=answer, sources=sources)
     return ChatResponse(answer=answer)

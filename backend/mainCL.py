@@ -1,3 +1,4 @@
+import asyncio
 import traceback
 from firebase_script import load_documents
 from gemini_agent import RAGAgent, load_or_embed
@@ -40,7 +41,11 @@ def mainCL() -> None:
                 break
 
             #start the retrieval and answer generation process inside gemini_agent.py
-            answer, _ = agent.answer(question, contents, vectors, verbose=True)
+            # answer() is async — the CLI is synchronous, so drive it with
+            # asyncio.run(). Calling it directly returns an un-awaited coroutine.
+            answer, _ = asyncio.run(
+                agent.answer(question, contents, vectors, verbose=True)
+            )
             print("\nGemini Agent Response:", answer)
 
     except Exception:
